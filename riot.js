@@ -8,7 +8,6 @@
   render_escape = {'&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;'};
 
   function default_escape_fn(str, key) {
-    console.log('str key', str, key)
     return str == undefined ? '' : (str+'').replace(/[&\"<>]/g, function(char) {
       return render_escape[char];
     });
