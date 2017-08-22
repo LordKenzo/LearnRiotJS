@@ -28,4 +28,6 @@
     )(data, escape_fn);
   
   };
-})(new Function('return this.riot = {}')());
+})(typeof window == "object" ? window.riot = {} : (function(){
+  return exports;
+})(exports));

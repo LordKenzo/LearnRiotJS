@@ -1,5 +1,10 @@
 # Studio del codice della libreria Riot 1.0.0
 
+
+La guida sarà divisa in "Giorni" dove ogni giorno equivale ad una tag (in inglese) su GIT.
+
+# Giorno 1
+
 ## Preparazione dell'ambiente di sviluppo
 
 Vediamo la creazione del file di applicazione e del documento web.
@@ -78,6 +83,51 @@ La struttura dello script RIOT è racchiusa in una IIFE:
 
 dove top è un alias di window (top === window ritorna true).
 Costruisco quini un oggetto riot che aggancio all'oggetto globale window.
+
+Vediamo in dettaglio l'operatore ternario presente nel passaggio del parametro riot alla funzione invocata immediatamente.
+Javascript è un linguaggio che dipende dall'host environment, cioè dove girerà il nostro script. Solitamente l'ambiente host è il nostro browser, che esporrà una API per "dialogare" con la finestra dove avviene il caricamente del DOM. Questa API è detta BOM e nel browser, l'oggetto globale che espone proprietà e metodi di interfacciamento alla finestra è l'oggetto window.
+L'organizzazione del codice in Javascript non prevede l'uso di Moduli (solo a partire da ES6) o di Namespace che evitano che il nostro codice intacchi troppo l'oggetto globale e creando possibili conflitti di nomi, con librerie di terze parti. Pertanto nel tempo sono stati approciati diversi modi e metodi come AMD e CommonJS.
+Quando creiamo la nostra libreria, possiamo crearla affinchè possa essere utilizzata sia in ambiente Browser, sia in ambiente NodeJS o con sistemi che usano AMD come RequireJS. Ed è questo il motivo per cui esiste questo strano passaggio alla variabile locale riot.
+
+Solitamente al posto di top, nelle librerie troviamo window:
+
+```javascript
+(typeof window == "object" ? window.riot = {} : exports);
+```
+
+Se mi trovo in un ambiente browser, il mio oggetto window non sarà undefined ma sarà un vero e proprio oggetto, quindi eseguirò il codice immediatamente dopo i "?" e quindi creo un oggetto vuoto che aggancio all'oggetto window. Ricorda, un oggetto in Javascript è dinamico, posso creare proprietà e metodi on-the-fly. Se invece mi trovassi in un ambiente NodeJS allora ho che exports è un oggetto (vuoto) che diventerà successivamente il mio oggetto riot.
+In un ambiente NodeJS avrò:
+
+```javascript
+let riot = require('./riot.js');
+
+console.log(riot);
+```
+
+Questo pattern è molto comune e ne troviamo di diversi. A titolo di esempio riporto la struttura utilizzata anche in jQuery:
+
+```javascript
+(function( global, factory ) {
+
+	if ( typeof module === "object" && typeof module.exports === "object" ) {
+		module.exports = global.document ?
+			factory( global, true ) :
+			function( w ) {
+				if ( !w.document ) {
+					throw new Error( "jQuery requires a window with a document" );
+				}
+				return factory( w );
+			};
+	} else {
+		factory( global );
+	}
+
+}(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
+
+}));
+```
+
+Procediamo con lo studio, togliendo tutto ciò che non è necessario e lasciando, mano a mano, solo le funzionalità che andremo a studiare.
 
 La funzione che sto studiando è la render, il metodo di riot che prende il template contenuto nello script con type html/todo e lo costruisce sostituendo i valori di id e name contenuti nell'oggetto data.
 Ma prima bisogna conoscere come funzione la:
