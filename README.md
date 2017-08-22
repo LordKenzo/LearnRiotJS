@@ -225,3 +225,72 @@ Nel codice originale abbiamo:
 
 è un operatore ternario, una if-then-else in linea. In pratica se è definita la mia funzione di escape (la e), allora la richiamo passando i valori dei campi contenuti nel mio dataset, in questo caso $1 assumerà i valori di id e name in quanto _ è un oggetto {id:..., name:....}, oppure (la OR || ) se il valore di _.$1 è undefined ritornerò '' o il valore stesso _.$1.
 
+# Giorno 2
+
+Per questo secondo giorno andiamo ad analizzare la fase in cui inseriamo un oggetto nella todo list proposta dal progetto RiotJS.
+Prima di addentrarci all'analisi del codice, dobbiamo preparare il nostro "campo", creando una sezione del codice HTML in cui riceviamo un input e che andremo a costruire con il nostro template (li) grazie alla render e i valori che passiamo. Pertanto nell'index.html andiamo ad inserire:
+
+```html
+<section id="todoapp">
+    <header id="header">
+      <h1>Elenco Todos</h1>
+      <label>TODO:</label>
+      <input id="new-todo" placeholder="Cosa ti serve?" autofocus>
+    </header>
+</section>
+```
+
+Qui è importante l'id new-todo che andremo ad utilizzare per prelevare il valore inserito dall'utente.
+Lo scopo è quello di catturare il valore dell'input, inserirlo in un database e visualizzarlo all'interno di una unordered-list (ul) tramite l'elemento template li. Ci servirà un oggetto todo che sarà il nostro MODEL.
+
+Creato l'lemento input, dobbiamo creare un finto database, e per questo scopo creiamo un file db.js che sarà una funzione costruttore e che farà il salvataggio dei dati nel local storage del browser e ritorna un oggetto con due metodi: get e put. Il primo preleva i dati dal database (grazie alla key passata) ed il secondo inserisce il valore:
+
+```javascript
+function DB(key) {
+  var store = window.localStorage;
+
+  return {
+    get: function() {
+      return JSON.parse(store[key] || '{}')
+    },
+
+    put: function(data) {
+      store[key] = JSON.stringify(data)
+    }
+  }
+}
+```
+
+Creiamo ora il nostro modello che rappresenta un ToDo, per questo creiamo il file todo.js (nel progetto RioJS reale il nome è api.js).
+Questo file consiste in una funzione costruttore, che prende il database ed estende l'oggetto che viene ritornato (implicitamente!) con il metodo riot.observable. Todo restituisce un oggetto apparentemente con 2 metodi, in realtà, questo oggetto è esteso tramite riot.observale, questo renderà il nostro oggetto capace di "ascoltare" eventi e reagire in base a questi.
+
+```javascript
+function Todo(db) {
+  
+  db = db || DB('todo-items');
+  
+  var self = riot.observable(this),
+    items = db.get();
+
+  self.add = function(name) {
+    var item = { id: "_" + ("" + Math.random()).slice(2), name: name }
+    items[item.id] = item;
+    self.trigger("add", item);
+  }
+
+  self.on("add remove toggle edit", function() {
+    db.put(items);
+  })
+}
+```
+
+Nel nostro codice dell'applicazione, l'app.js, possiamo simulare l'addEventListener, grazie all'on di riot.observale.
+Senza entrare nel dettaglio, spieghiamo come avviene il giro del codice:
+
+1. L'utente digita il testo;
+2. Catturiamo il testo digitato con l'addEventListener che inseriamo nel campo input;
+3. L'addEventListener richiamerà la add di Todo per inserire il testo nel database;
+4. Viene richiamato il metodo trigger (di riot.observable) per richiamare l'evento add;
+5. L'evento add attiverà la funzione add (diversa dalla funzione Todo.add) che effettuerà il render dell'elemento li.
+
+Complicato? Continua...
