@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
   </head>
-  <script type="html/todo" type="text/template">
+  <script type="html/todo">
     <li id="{id}"><div class="view">
       <input class="toggle" type="checkbox">
       <label>{name}</label>
       <button class="destroy"/>
     </div>
-    <input class="edit" value="{name}"></li></script>
+    <input class="edit" value="{name}"></li>
+  </script>
   <body>
     <h1>Studio Riot 1.0.0</h1>
 
@@ -27,7 +28,7 @@
     <ul id="todo-list"></ul>
     <script src="riot.js"></script>
     <script src="db.js"></script>
-    <script src="todo.js"></script>
+    <script src="todos.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

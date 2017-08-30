@@ -15,22 +15,21 @@ root.innerHTML = el;
 /*** day2 */
 
 
-window.todo = new Todo();
+todos = new Todos();
 
 //E' ERRATO PENSARE -> todo.addEventListener('add', add);
-todo.on("add", add);
+todos.on("add", refresh);
 
 document.getElementById("new-todo").addEventListener("keyup", function(e) {
   var val = this.value;
   if (e.which == 13 && val) {
-    todo.add(val);
+    todos.add(val);
     this.value = "";
   }
 });
 
-function add(item) {
+function refresh(item) {
   if (this.id) item = this;
-
   root.innerHTML += riot.render(template, item, true);
 }
 

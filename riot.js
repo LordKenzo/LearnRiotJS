@@ -5,27 +5,31 @@
 
   riot.observable = function(el) {
     var callbacks = {}, slice = [].slice;
-  
+
     el.on = function(events, fn) {
+      console.log('events:',events)
       if (typeof fn === "function") {
         events.replace(/[^\s]+/g, function(name, pos) {
+          console.log(name, pos, fn);
           (callbacks[name] = callbacks[name] || []).push(fn);
           fn.typed = pos > 0;
+          console.log(fn.typed);
         });
       }
       return el;
     };
   
-
-  
     el.trigger = function(name) {
       var args = slice.call(arguments, 1),
         fns = callbacks[name] || [];
+      console.log('triggers', name,  args)
       for (var i = 0, fn; (fn = fns[i]); ++i) {
+        console.log(i, fn.one)
         if (!fn.busy) {
           fn.busy = true;
+          console.log([name].concat(args));
           fn.apply(el, fn.typed ? [name].concat(args) : args);
-          if (fn.one) { fns.splice(i, 1); i--; }
+          if (fn.one) {fns.splice(i, 1); i--; }
           fn.busy = false;
         }
       }

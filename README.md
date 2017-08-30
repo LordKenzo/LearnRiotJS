@@ -37,7 +37,7 @@ ed un file index.html:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
-  <script type="html/todo" type="text/template">
+  <script type="html/todo">
     <li id="{id}">
       <div class="view">
         <input class="toggle" type="checkbox">
@@ -291,6 +291,48 @@ Senza entrare nel dettaglio, spieghiamo come avviene il giro del codice:
 2. Catturiamo il testo digitato con l'addEventListener che inseriamo nel campo input;
 3. L'addEventListener richiamerà la add di Todo per inserire il testo nel database;
 4. Viene richiamato il metodo trigger (di riot.observable) per richiamare l'evento add;
-5. L'evento add attiverà la funzione add (diversa dalla funzione Todo.add) che effettuerà il render dell'elemento li.
+5. L'evento add attiverà la funzione add che effettuerà il render dell'elemento li.
 
 Complicato? Continua...
+
+# Giorno 3
+
+Prima di cominciare, volevo porre attenzione ad alcuni cambiamenti nel codice e motivarli:
+
+1. In index.html lo scipt del template ha due attributi type. Uno è di troppo;
+2. In app.js ho cambiato la variabile todo in todos perchè rappresenta meglio il concetto di contenitore di todo. E' superfluo esplicitare l'oggetto window;
+3. In app.js ho cambiato il nome della funzione add per il refresh del render in quanto si confonde con la funzione add dell'oggetto Todos. L'ho chiamata refresh e si occupa di invocare la render di Riot;
+4. Il file Todo.js diventa Todos.js e al suo interno items diventa todos e item diventa todo;
+5. Sempre in Todos.js l'invocazione del metodo on avviene solo per l'evento add, l'unico per il momento codificato e quindi per una migliore e più facile comprensione;
+
+Facciamo una breve sintesi di ciò che abbiamo visto fino ad ora:
+
+1. Abbiamo creato uno snippet che rappresenta il nostro template e che individueremo tramite l'attributo html "[type='html/todo']" grazie alla querySelector;
+2. In index.html creiamo la sezione del campo <input> con id pari a "new-todo" e il codice della lista <ul> con id uguale a "todo-list";
+3. Nel file dell'applicazione app.js andiamo a prenderci il riferimento alla lista (l'elemento root) ed il codice del nostro template, grazie alla innerHTML;
+4. Creiamo una funzione costruttore Todos che rappresenta il modello che raccoglierà i nostri todo, ovvero un oggetto javascript con i metodi: add, trigger e on;
+5. Gli items verranno aggiunti al Local Storage del browser, in Chrome lo troviamo sotto a "Strumenti per Sviluppatori" in Application -> Storage -> Local Storage -> File e nel pannello Key troviamo il "todo-items";
+6. Il Todos che costruirò avrà una estensione grazie a Riot dei seguenti metodi: on e trigger, mentre il metodo add è la logica che costruirà un nuovo oggetto todo e lo inserirà nell'array todos e avvierà, con il trigger, il metodo add;
+7. Registro, grazie al metodo on di Riot, la funzione rispetto ad un evento avviato dal trigger del punto 6;
+8. Viene registrata la funzione refresh per l'evento on e la funzione anonima per l'allineamento al database sempre per l'eveno on;
+9. Quando l'utente invia il nuovo todo, viene invocato il metodo add che, grazie al trigger, avvia l'evento "add". Questo evento ha 2 funzioni registrate: il sync del db e il refresh del DOM.
+
+Il metodo _on_ di Riot accetta una stringa di eventi ed una funzione, e costruisce un oggetto di callbacks, la cui chiave è il nome dell'evento ed il valore un array di funzioni. In questo modo ad un evento (add) associo n funzioni. Nel mio caso associamo all'evento 'add' la funzione anonima di sincronizzazione al database e la funzione refresh per richiamare la render di Riot.
+Posso registrare anche la medesima funzione per più eventi, passando una stringa di eventi, come detto ad inzio: 
+
+```javascript
+self.on("add edit update delete", function() {...});
+```
+
+grazie all'espressione regolare, prelevo ogni singola parola (evento) separata da uno (o più) spazio. Potevo avere una regex del tipo: /[^,\s]+/g per separare i nomi degli eventi con spazi e/o virgole.
+Per ogni evento che trovo, ne prendo il nome dell'evento, la posizione e la funzione fn da associare all'evento.
+Se ho più eventi con la stessa funzione, creo una proprietà typed alla funzione fn (una funzione è un oggetto e posso estenderla con altre proprietà). Questo mi servirà nella trigger.
+
+La funzione _trigger_ di Riot accetta il nome dell'evento. Preleva gli argomenti facendo una slice di arguments e scartando il primo (indice 0) argomento che è il nome dell'evento stesso. 
+Inizializza l'array fns su cui effettua un ciclo for per ogni funzione in ascolto all'evento passato. Il ciclo si interrompe nel momento in cui l'assegnazione fn = fns[i] è "undefined".
+
+La funzione viene invocata tramite la apply, il cui argomento this è l'elemento Todos e gli argomenti sono l'array args oppure la concatenazione del nome della funzione e i loro argomenti. Ignoriamo per il momento l'impostazione fn.one,in quanto nel codice "semplificato" abbiamo tolto la possibilità di impostare la proprietà one della funzione, pertanto in questo contesto non ha senso.
+
+La apply serve per eseguire una funzione, cambiandone il contesto e cioè il this. A differenza della call, la apply vuole un array di argomenti anzichè un elenco di variabili.
+
+La apply viene invocata passando gli argomenti oppure la concatenazione degli argomenti ed il nome dell'evento se la funzione fn passata alla on è utilizzata da più eventi (typed = true).
