@@ -308,7 +308,7 @@ Prima di cominciare, volevo porre attenzione ad alcuni cambiamenti nel codice e 
 Facciamo una breve sintesi di ciò che abbiamo visto fino ad ora:
 
 1. Abbiamo creato uno snippet che rappresenta il nostro template e che individueremo tramite l'attributo html "[type='html/todo']" grazie alla querySelector;
-2. In index.html creiamo la sezione del campo <input> con id pari a "new-todo" e il codice della lista <ul> con id uguale a "todo-list";
+2. In index.html creiamo la sezione del campo input con id pari a "new-todo" e il codice della lista ul con id uguale a "todo-list";
 3. Nel file dell'applicazione app.js andiamo a prenderci il riferimento alla lista (l'elemento root) ed il codice del nostro template, grazie alla innerHTML;
 4. Creiamo una funzione costruttore Todos che rappresenta il modello che raccoglierà i nostri todo, ovvero un oggetto javascript con i metodi: add, trigger e on;
 5. Gli items verranno aggiunti al Local Storage del browser, in Chrome lo troviamo sotto a "Strumenti per Sviluppatori" in Application -> Storage -> Local Storage -> File e nel pannello Key troviamo il "todo-items";
